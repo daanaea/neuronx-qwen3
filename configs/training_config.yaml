@@ -1,0 +1,53 @@
+# Training Configuration
+training:
+  output_dir: ./outputs
+  num_train_epochs: 3
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 8
+  gradient_accumulation_steps: 8
+  learning_rate: 2e-5
+  warmup_steps: 1000
+  weight_decay: 0.01
+  logging_steps: 10
+  save_steps: 500
+  eval_steps: 500
+  save_total_limit: 3
+  seed: 42
+  bf16: true
+  tf32: true
+  gradient_checkpointing: true
+  resume_from_checkpoint: null
+  push_to_hub: false
+
+# Neuron specific settings
+neuron:
+  tensor_parallel_size: 8
+  pipeline_parallel_size: 1
+  optimize_for: "training"
+  compiler_workdir: /tmp/neuron_compile
+  cache_dir: /tmp/neuron_cache
+  enable_stochastic_rounding: true
+
+# Data settings
+data:
+  dataset_name: "your_dataset"
+  dataset_config: null
+  train_file: null
+  validation_file: null
+  max_seq_length: 2048
+  preprocessing_num_workers: 4
+  overwrite_cache: false
+
+# Model settings
+model:
+  model_name_or_path: "Qwen/Qwen2.5-7B"
+  config_name: null
+  tokenizer_name: null
+  use_fast_tokenizer: true
+  model_revision: "main"
+  trust_remote_code: true
+
+# Distributed training
+distributed:
+  backend: "xla"
+  init_method: "env://"

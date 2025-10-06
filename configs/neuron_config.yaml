@@ -1,0 +1,209 @@
+# AWS Neuron SDK Configuration for Qwen3-14B Training
+
+# Neuron Compiler Configuration
+neuron_compiler:
+  # Compiler version and settings
+  version: "2.x"
+  workdir: "./neuron_cache"
+  
+  # Optimization flags
+  flags:
+    - "--model-type=transformer"
+    - "--auto-cast=all"
+    - "--enable-mixed-precision-accumulation"
+    - "--enable-saturate-infinity"
+    - "--verbose=35"
+  
+  # Optimization level (0-3, higher is more aggressive)
+  optimization_level: 2
+  
+  # Memory optimization
+  memory_optimization:
+    enable_gradient_checkpointing: true
+    enable_activation_checkpointing: true
+    bucket_cap_mb: 25
+    
+  # Performance tuning
+  performance:
+    enable_fast_math: true
+    enable_fused_ops: true
+    pipeline_config: "schedule"
+
+# XLA Configuration
+xla:
+  # Environment variables for XLA
+  flags:
+    XLA_USE_BF16: "1"
+    XLA_DUMP_TO: "./xla_dumps"
+    XLA_FLAGS: "--xla_dump_hlo_as_text --xla_dump_hlo_as_proto"
+  
+  # JIT compilation settings
+  jit:
+    enable: true
+    compilation_cache: "./xla_cache"
+    
+# Distributed Training on Multiple Trainium Chips
+distributed:
+  # Tensor parallelism configuration
+  tensor_parallel:
+    enabled: true
+    size: 1  # Number of chips for tensor parallelism
+    
+  # Data parallelism configuration  
+  data_parallel:
+    enabled: true
+    
+  # Pipeline parallelism (for very large models)
+  pipeline_parallel:
+    enabled: false
+    size: 1
+    micro_batch_size: 1
+
+# Memory Management
+memory:
+  # HBM (High Bandwidth Memory) settings
+  hbm:
+    enable_defragmentation: true
+    eager_free: true
+    
+  # Memory pool settings
+  pool:
+    initial_size_mb: 1024
+    max_split_size_mb: 512
+    
+  # Gradient accumulation memory optimization
+  gradient_accumulation:
+    offload_to_cpu: false
+    use_pinned_memory: true
+
+# Profiling and Debugging
+profiling:
+  enabled: false
+  output_dir: "./neuron_profiles"
+  
+  # Profile specific operations
+  profile_memory: true
+  profile_compute: true
+  profile_communication: true
+  
+  # Profiling intervals
+  start_step: 100
+  end_step: 200
+  
+debugging:
+  enable_debug_info: false
+  dump_tensors: false
+  check_numerics: false
+  
+  # Error handling
+  on_error:
+    dump_state: true
+    save_checkpoint: true
+
+# Hardware Monitoring
+monitoring:
+  # Neuron Monitor settings
+  neuron_monitor:
+    enabled: true
+    interval_seconds: 10
+    
+  # Hardware metrics to track
+  metrics:
+    - "neuron_device_hw_ecc_events"
+    - "neuron_device_runtime_errors" 
+    - "neuron_device_power_consumption"
+    - "neuron_device_memory_usage"
+    - "neuron_device_utilization"
+    
+  # CloudWatch integration
+  cloudwatch:
+    enabled: false
+    namespace: "Neuron/Training"
+    region: "us-west-2"
+
+# Instance-Specific Settings
+instance_config:
+  # Trn2 instance types and their configurations
+  trn2_xlarge:
+    num_devices: 1
+    memory_per_device_gb: 32
+    recommended_batch_size: 1
+    
+  trn2_8xlarge:
+    num_devices: 1
+    memory_per_device_gb: 128
+    recommended_batch_size: 4
+    
+  trn2_48xlarge:
+    num_devices: 6
+    memory_per_device_gb: 128
+    recommended_batch_size: 8
+
+# Model-Specific Optimizations
+model_optimizations:
+  # Attention optimizations
+  attention:
+    use_flash_attention: false  # Not yet supported on Neuron
+    attention_dropout: 0.0
+    
+  # Embedding optimizations
+  embeddings:
+    padding_idx: 0
+    sparse: false
+    
+  # Layer norm optimizations
+  layer_norm:
+    eps: 1e-6
+    elementwise_affine: true
+
+# Training Optimizations
+training_optimizations:
+  # Mixed precision settings
+  mixed_precision:
+    loss_scale: "dynamic"
+    loss_scale_window: 1000
+    min_loss_scale: 1e-4
+    
+  # Gradient settings
+  gradients:
+    clip_by_global_norm: true
+    max_norm: 1.0
+    
+  # Optimizer optimizations
+  optimizer:
+    fused: true
+    foreach: false
+
+# Environment Variables
+environment:
+  # Core Neuron environment variables
+  NEURON_CC_FLAGS: "--model-type=transformer --auto-cast=all"
+  NEURON_FRAMEWORK_DEBUG: "0"
+  NEURON_COMPILE_CACHE_URL: "./neuron_cache"
+  
+  # Memory management
+  MALLOC_ARENA_MAX: "64"
+  
+  # Multi-processing
+  OMP_NUM_THREADS: "1"
+  
+  # Debugging (set to 1 only when debugging)
+  NEURON_DUMP_TENSORS: "0"
+  NEURON_EXTRACT_GRAPHS_ONLY: "0"
+
+# Advanced Settings
+advanced:
+  # Custom kernels
+  custom_kernels:
+    enabled: false
+    kernel_path: "./custom_kernels"
+    
+  # Experimental features
+  experimental:
+    enable_async_execution: false
+    use_experimental_optimizations: false
+    
+  # Fallback settings
+  fallback:
+    to_cpu_on_error: false
+    cpu_fallback_ops: []
