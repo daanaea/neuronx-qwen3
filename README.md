@@ -6,7 +6,7 @@ This repository provides a complete setup for training Qwen3-14B models on AWS T
 
 ## Overview
 
-![Qwen3 Architecture](./assets/qwen3-architecture.png)
+![Qwen3 Architecture](qwen3-architecture.png)
 
 - **Model**: Qwen3-14B (14.8B parameters)
 - **Hardware**: AWS Trn2 instances
