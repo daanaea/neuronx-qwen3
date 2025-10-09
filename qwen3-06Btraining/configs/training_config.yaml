@@ -2,9 +2,9 @@
 training:
   output_dir: ./outputs
   num_train_epochs: 3
-  per_device_train_batch_size: 4
-  per_device_eval_batch_size: 8
-  gradient_accumulation_steps: 8
+  per_device_train_batch_size: 16
+  per_device_eval_batch_size: 32
+  gradient_accumulation_steps: 4
   learning_rate: 2e-5
   warmup_steps: 1000
   weight_decay: 0.01
@@ -21,7 +21,7 @@ training:
 
 # Neuron specific settings
 neuron:
-  tensor_parallel_size: 8
+  tensor_parallel_size: 1
   pipeline_parallel_size: 1
   optimize_for: "training"
   compiler_workdir: /tmp/neuron_compile
@@ -40,7 +40,7 @@ data:
 
 # Model settings
 model:
-  model_name_or_path: "Qwen/Qwen2.5-7B"
+  model_name_or_path: "Qwen/Qwen3-0.6B"
   config_name: null
   tokenizer_name: null
   use_fast_tokenizer: true

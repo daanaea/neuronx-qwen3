@@ -1,18 +1,18 @@
-# Qwen3-14B Training on AWS Trn2 with Neuron SDK
+# Qwen3-0.6B Training on AWS Trn2 with Neuron SDK
 
 Team: Ananya, Sara
 
-This repository provides a complete setup for training Qwen3-14B models on AWS Trainium (Trn2) instances using the AWS Neuron SDK.
+This repository provides a complete setup for training Qwen3-0.6B models on AWS Trainium (Trn2) instances using the AWS Neuron SDK.
 
 ## Overview
 
 ![Qwen3 Architecture](./assets/qwen3-architecture.png)
 
-- **Model**: Qwen3-14B (14.8B parameters)
+- **Model**: Qwen3-0.6B (0.6B parameters, 0.44B non-embedding)
 - **Hardware**: AWS Trn2 instances
 - **Framework**: PyTorch with AWS Neuron SDK
 - **Precision**: BF16
-- **Context Length**: 32,768 tokens (extendable to 131,072)
+- **Context Length**: 32,768 tokens (extendable to 40,960)
 
 ## Quick Start
 
@@ -20,6 +20,7 @@ This repository provides a complete setup for training Qwen3-14B models on AWS T
    ```bash
    chmod +x scripts/setup.sh
    ./scripts/setup.sh
+   source ~/.neuron_env
    ```
 
 2. **Install Dependencies**
@@ -29,20 +30,44 @@ This repository provides a complete setup for training Qwen3-14B models on AWS T
 
 3. **Configure Training**
    ```bash
-   cp configs/qwen3_14b_config.yaml configs/my_config.yaml
+   cp configs/qwen3_0.6b_config.yaml configs/my_config.yaml
    # Edit configs/my_config.yaml with your settings
    ```
 
-4. **Start Training**
+4. **Start Training with Auto-Stop**
    ```bash
+   # Train for 1 minute then auto-stop (testing)
+   python src/train.py --config configs/my_config.yaml --auto-stop 60
+
+   # Train for 1 hour then auto-stop
+   python src/train.py --config configs/my_config.yaml --auto-stop 3600
+
+   # Train without auto-stop
    python src/train.py --config configs/my_config.yaml
    ```
+
+## Auto-Stop Feature
+
+Train with automatic instance shutdown to control costs:
+
+```bash
+# Launch script with 1-minute auto-stop
+./scripts/launch_training.sh -m 1
+
+# Or use Python directly
+python src/train.py --config configs/my_config.yaml --auto-stop 60
+```
+
+## Documentation
+
+- **[Complete Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Full walkthrough from EC2 launch to training
+- **[Quick Start Guide](docs/QUICK_START.md)** - Condensed reference for experienced users
 
 ## Repository Structure
 
 ```
 ├── configs/                 # Training configurations
-│   ├── qwen3_14b_config.yaml
+│   ├── qwen3_0.6b_config.yaml
 │   └── neuron_config.yaml
 ├── scripts/                 # Setup and utility scripts
 │   ├── setup.sh
@@ -60,19 +85,20 @@ This repository provides a complete setup for training Qwen3-14B models on AWS T
 
 ## Model Configuration
 
-Based on the Qwen3-14B architecture:
-- **Total Parameters**: 14.8B (13.2B non-embedding)
-- **Layers**: 40
-- **Attention Heads**: 40 (Query), 8 (Key/Value)
-- **Hidden Size**: 5120
-- **Vocab Size**: 152064
+Based on the Qwen3-0.6B architecture:
+- **Total Parameters**: 0.6B (0.44B non-embedding)
+- **Layers**: 28
+- **Attention Heads**: 16 (Query), 8 (Key/Value)
+- **Hidden Size**: 1024
+- **Intermediate Size**: 3072
+- **Vocab Size**: 151936
 
 ## AWS Trn2 Instance Types
 
-Recommended instance types:
-- `trn2.xlarge` (1 Trainium chip, 32GB memory) - For experimentation
-- `trn2.8xlarge` (1 Trainium chip, 128GB memory) - For small-scale training
-- `trn2.48xlarge` (6 Trainium chips, 768GB memory) - For distributed training
+Recommended instance types for Qwen3-0.6B:
+- `trn2.xlarge` (1 Trainium chip, 32GB memory) - **Recommended** for 0.6B model
+- `trn2.8xlarge` (1 Trainium chip, 128GB memory) - For larger batch sizes
+- `trn2.48xlarge` (6 Trainium chips, 768GB memory) - For multi-chip distributed training
 
 ## Optimization
 - Uses XLA compiler optimizations
@@ -85,7 +111,7 @@ Recommended instance types:
 
 ## Prerequisites
 
-- AWS EC2 Trn2 instance (recommended: trn2.48xlarge for distributed training)
+- AWS EC2 Trn2 instance (recommended: trn2.xlarge or trn2.8xlarge for 0.6B model)
 - Python 3.8+
 - AWS Neuron SDK 2.x
 

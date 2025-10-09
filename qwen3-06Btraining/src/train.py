@@ -18,6 +18,7 @@ from transformers import AutoTokenizer, get_linear_schedule_with_warmup
 
 from model import Qwen3Model
 from data_loader import create_dataloader
+from auto_stop import auto_stop
 from utils import (
     setup_logging,
     save_checkpoint,
@@ -296,31 +297,38 @@ class Qwen3Trainer:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Train Qwen3-14B on AWS Trn2")
+    parser = argparse.ArgumentParser(description="Train Qwen3 on AWS Trn2")
     parser.add_argument('--config', type=str, required=True, help='Path to config file')
     parser.add_argument('--output_dir', type=str, help='Output directory override')
     parser.add_argument('--resume', type=str, help='Resume from checkpoint')
+    parser.add_argument('--auto-stop', type=int, help='Auto-stop instance after N seconds (e.g., 60 for 1 minute)')
+    parser.add_argument('--auto-stop-region', type=str, default='us-east-1', help='AWS region for auto-stop (default: us-east-1)')
     args = parser.parse_args()
-    
+
     # Load configuration
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
-        
+
     # Override config with command line arguments
     if args.output_dir:
         config['output_dir'] = args.output_dir
     if args.resume:
         config['resume_from_checkpoint'] = args.resume
-        
+
     # Setup output directory
     os.makedirs(config['output_dir'], exist_ok=True)
-    
+
     # Setup logging
     setup_logging(config.get('log_level', 'INFO'))
-    
+
+    # Start auto-stop timer if requested
+    if args.auto_stop:
+        logger.info(f"Auto-stop enabled: Instance will stop in {args.auto_stop} seconds ({args.auto_stop/60:.1f} minutes)")
+        auto_stop(delay_seconds=args.auto_stop, region=args.auto_stop_region)
+
     # Initialize trainer
     trainer = Qwen3Trainer(config)
-    
+
     # Start training
     trainer.train()
 

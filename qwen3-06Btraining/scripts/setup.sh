@@ -317,7 +317,7 @@ main() {
     log ""
     log "Next steps:"
     log "1. Source the environment: source ~/.neuron_env"
-    log "2. Configure training: cp configs/qwen3_14b_config.yaml configs/my_config.yaml"
+    log "2. Configure training: cp configs/qwen3_0.6b_config.yaml configs/my_config.yaml"
     log "3. Edit your configuration file as needed"
     log "4. Start training: python src/train.py --config configs/my_config.yaml"
     log ""
