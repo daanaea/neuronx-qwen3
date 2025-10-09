@@ -6,7 +6,7 @@ This repository provides a complete setup for training Qwen3-0.6B models on AWS 
 
 ## Overview
 
-![Qwen3 Architecture](./assets/qwen3-architecture.png)
+![Qwen3 Architecture](qwen3-arch.png)
 
 - **Model**: Qwen3-0.6B (0.6B parameters, 0.44B non-embedding)
 - **Hardware**: AWS Trn2 instances
